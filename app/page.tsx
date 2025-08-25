@@ -1,103 +1,211 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import Link from "next/link"
+import Image from "next/image"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Bell, Link2, Info } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
+
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="bg-gray-50">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-r from-cyan-700 to-cyan-500 text-white text-center py-24 px-6 md:px-16 overflow-hidden">
+        <motion.h2
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg"
+        >
+          Jharkhand Medical & Health Infrastructure
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3 }}
+          className="text-lg max-w-2xl mx-auto mb-6"
+        >
+          Ensuring timely procurement, distribution, and availability of medical
+          supplies for better healthcare across Jharkhand.
+        </motion.p>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <Link href="/About/overview">
+  <Button className="bg-white text-cyan-700 hover:bg-gray-100 shadow-lg px-6 py-2 rounded-full">
+    Learn More
+  </Button>
+</Link>
+        </motion.div>
+      </section>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      {/* About Us Section */}
+      <section id="about" className="py-20 px-6 md:px-16 bg-white">
+        <div className="grid md:grid-cols-3 gap-12 items-start">
+          {/* Text */}
+          <motion.div
+            className="md:col-span-2"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <h2 className="text-3xl text-black font-bold mb-6 border-l-4 border-cyan-600 pl-3">
+              Overview
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+             Jharkhand Medical and Health Infrastructure Development and Procurement Corporation Limited 
+             (JMHIDPCL) was established in 2013 at Ranchi Jharkhand, under the aegis of Department of Health,
+              Medical Education and Family Welfare, Government of Jharkhand and was entrusted with the functions of procurement, 
+              storage, distribution of medicines surgical goods medical equipment / instrument and insecticides for the health care
+               institutions under Govt. of Jharkhand.(GoJ)
+            </p>
+            <p className="text-gray-600 leading-relaxed">
+             With the changes in the healthcare arena there was a felt need of developing new as well as upgrading
+              the existing functioning and processes of Department of Health, Medical Education and Family Welfare, 
+              Government of Jharkhand, and consequently develop an institution supported with necessary infrastructure to
+               make the system responsive to meet the objectives of the universal health coverage. With the view to match 
+               the changing demands and pace of development in the sector, Jharkhand Medical and Health Infrastructure Development
+                and Procurement Corporation Limited (JMHIDPCL) was established as an autonomous
+              body and was incorporated under company’s act 1956 as a public undertaking on 24th May 2013.
+            </p>
+            <p className="text-gray-600 leading-relaxed">
+             Government of Jharkhand (GoJ) is committed to provide timely and 
+             effective Health Care Services to the people of Jharkhand...
+            </p>
+          </motion.div>
+
+          {/* Profiles */}
+          <motion.div
+  className="grid gap-10 md:grid-cols-1 lg:grid-cols-2"
+  initial={{ opacity: 0, x: 50 }}
+  whileInView={{ opacity: 1, x: 0 }}
+  viewport={{ once: true }}
+  transition={{ duration: 0.5 }}
+>
+  <div className="text-center p-6 rounded-xl shadow-lg hover:shadow-2xl transition bg-white">
+    <Image
+      src="/shree_ajoy.jpeg"
+      alt="Ajoy Kumar Singh"
+      width={220}
+      height={220}
+      className="rounded-lg mx-auto object-cover"
+    />
+    <h3 className="mt-4 text-black font-bold">Shri AJOY KUMAR SINGH, I.A.S.</h3>
+    <p className="text-sm text-gray-600">ADDITIONAL CHIEF SECRETARY, Health, GoJ</p>
+  </div>
+
+  <div className="text-center p-6 rounded-xl shadow-lg hover:shadow-2xl transition bg-white">
+    <Image
+      src="/shre_abu_imran.jpg"
+      alt="Abu Imran"
+      width={220}
+      height={220}
+      className="rounded-lg mx-auto object-cover"
+    />
+    <h3 className="mt-4 text-black font-bold">Shri Abu Imran, I.A.S.</h3>
+    <p className="text-sm text-gray-600">Managing Director (JMHIDPCL)</p>
+  </div>
+</motion.div>
+
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </section>
+
+      {/* Info Section */}
+      <section id="info" className="py-20 px-6 md:px-16 bg-gradient-to-b from-gray-100 to-white">
+        <motion.div
+          className="grid md:grid-cols-3 gap-8 mb-16"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          {/* Notifications */}
+          <Card className="shadow-lg hover:shadow-2xl transition">
+            <CardHeader className="bg-cyan-600 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="w-5 h-5" /> Notifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <p className="text-gray-500 text-sm">No new notifications...</p>
+            </CardContent>
+          </Card>
+
+          {/* Important Links */}
+          <Card className="shadow-lg hover:shadow-2xl transition">
+            <CardHeader className="bg-green-600 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <Link2 className="w-5 h-5" /> Important Links
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ul className="space-y-2 text-sm text-blue-600">
+                <li><a href="https://www.mohfw.gov.in" target="_blank" className="hover:underline">Ministry of Health</a></li>
+                <li><a href="https://jrhms.jharkhand.gov.in" target="_blank" className="hover:underline">National Health Mission</a></li>
+                <li><a href="https://eprocure.gov.in" target="_blank" className="hover:underline">eProcurement System</a></li>
+                <li><a href="https://jharkhand.gov.in" target="_blank" className="hover:underline">Jharkhand State Portal</a></li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Misc Info */}
+          <Card className="shadow-lg hover:shadow-2xl transition">
+            <CardHeader className="bg-red-600 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <Info className="w-5 h-5" /> Miscellaneous
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <p className="text-gray-500 text-sm">No information available...</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Contact + Map */}
+        <motion.div
+          className="grid md:grid-cols-2 gap-12 items-center"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <div>
+            <h2 className="text-3xl font-bold mb-6 text-cyan-700">Contact Us</h2>
+            <p className="text-gray-700 leading-relaxed">
+              <strong>JMHIDPCL</strong><br />
+              Maternal & Child Hospital Building<br />
+              RCH Campus, Namkum, Ranchi, Jharkhand, India
+            </p>
+            <p className="mt-4 space-y-2">
+              <span className="block">📞 0651-2912533</span>
+              <span className="block">📧 jmhidpc2014@gmail.com</span>
+              <span className="block">
+                🌐 <a href="http://www.jmhidpcl.jharkhand.gov.in" className="text-blue-600 hover:underline">
+                  www.jmhidpcl.jharkhand.gov.in
+                </a>
+              </span>
+            </p>
+          </div>
+
+          {/* Map */}
+          <div className="w-full h-72 rounded-xl overflow-hidden shadow-lg">
+  <iframe
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3663.195951142898!2d85.36949121497372!3d23.344914384790712!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39f4e32769d74efb%3A0x69831098b2fddace!2sJMHIDPCL!5e0!3m2!1sen!2sin!4v1626182461425!5m2!1sen!2sin"
+    width="100%"
+    height="100%"
+    style={{ border: 0 }}
+    allowFullScreen
+    loading="lazy"
+    referrerPolicy="no-referrer-when-downgrade"
+  ></iframe>
+</div>
+
+        </motion.div>
+      </section>
     </div>
-  );
+  )
 }
