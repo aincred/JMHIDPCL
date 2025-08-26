@@ -36,6 +36,7 @@ export default function Footer() {
             <li><a href="#" className="hover:underline">Tenders</a></li>
             <li><a href="/gallery" className="hover:underline">Gallery</a></li>
             <li><a href="/rti" className="hover:underline">RTI</a></li>
+             <li><a href="/WP" className="hover:underline">Website Policy</a></li>
           </ul>
         </div>
 
