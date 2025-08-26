@@ -4,11 +4,11 @@ export default function EquipmentProcurementPage() {
   return (
     <main className="max-w-6xl mx-auto px-6 py-10">
       {/* Title */}
-      <h1 className="text-2xl md:text-3xl font-bold text-blue-900 mb-6">
+      <h1 className="text-2xl md:text-3xl font-bold text-blue-900 mb-6 text-center">
         The Equipment Procurement Process
       </h1>
 
-      <div className="space-y-8 text-gray-800 leading-relaxed">
+      <div className="space-y-8 text-gray-800 leading-relaxed text-justify">
         {/* Objectives */}
         <section>
           <h2 className="text-xl font-semibold text-blue-700 mb-2">
