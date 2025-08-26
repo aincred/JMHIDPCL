@@ -21,12 +21,12 @@ export default function MDDeskPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="bg-white shadow-lg rounded-2xl p-8 md:p-12 leading-relaxed text-gray-700"
+        className="bg-white shadow-lg rounded-2xl p-8 md:p-12 leading-relaxed text-gray-700 text-justify"
       >
         {/* MD Name */}
         <h2 className="text-xl font-semibold text-blue-800 mb-4">
           Managing Director <br />
-          <span className="text-gray-600 text-base">JMHIDPCL</span>
+          <span className="text-black text-base">JMHIDPCL</span>
         </h2>
 
         {/* Content */}

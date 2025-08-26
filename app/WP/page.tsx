@@ -5,15 +5,15 @@ export default function PolicyPage() {
     <main className="max-w-5xl mx-auto px-6 py-10 text-gray-800">
       <h1 className="text-3xl font-bold text-blue-800 mb-6">Website Policy</h1>
 
-      <section className="space-y-4">
+      <section className="space-y-4 text-justify">
         <h2 className="text-2xl font-semibold text-blue-800 mt-8">Terms and Conditions</h2>
         <p>
-          This Portal is designed, developed, and hosted by HDC, Government of Jharkhand.
+          This Portal is designed, developed, and hosted by State Data Center (SDC), Government of Jharkhand.
         </p>
         <p>
           Though all efforts have been made to ensure the accuracy and currency of the
           content on this Portal, the same should not be construed as a statement of law
-          or used for any legal purposes. HDC / Government of Jharkhand accepts no
+          or used for any legal purposes. State Data Center (SDC) / Government of Jharkhand accepts no
           responsibility in relation to the accuracy, completeness, usefulness, or
           otherwise, of the contents. Users are advised to verify/check any information
           with the relevant Government department(s) and/or other source(s), and to
@@ -21,7 +21,7 @@ export default function PolicyPage() {
           provided in the Portal.
         </p>
         <p>
-          In no event will the Government of Jharkhand or HDC be liable for any expense,
+          In no event will the Government of Jharkhand or State Data Center (SDC) be liable for any expense,
           loss, or damage including, without limitation, indirect or consequential loss
           or damage, or any expense, loss, or damage whatsoever arising from use, or
           loss of use, of data, arising out of or in connection with the use of this
@@ -29,7 +29,7 @@ export default function PolicyPage() {
         </p>
         <p>
           Links to other websites that have been included on this Portal are provided for
-          public convenience only. HDC is not responsible for the contents or reliability
+          public convenience only. State Data Center (SDC) is not responsible for the contents or reliability
           of linked websites and does not necessarily endorse the views expressed within
           them. We cannot guarantee the availability of such linked pages at all times.
         </p>
@@ -40,7 +40,7 @@ export default function PolicyPage() {
         </p>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4 text-justify">
         <h2 className="text-2xl font-semibold text-blue-800 mt-8">Copyright Policy</h2>
         <p>
           Material featured on this Portal may be reproduced free of charge after taking
@@ -54,7 +54,7 @@ export default function PolicyPage() {
         </p>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4 text-justify">
         <h2 className="text-2xl font-semibold text-blue-800 mt-8">Privacy Policy</h2>
         <p>
           This Portal does not automatically capture any specific personal information
@@ -81,7 +81,7 @@ export default function PolicyPage() {
         </p>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4 text-justify">
         <h2 className="text-2xl font-semibold text-blue-800 mt-8">Cookies</h2>
         <p>
           A cookie is a piece of software code that an internet website sends to your
@@ -106,7 +106,7 @@ export default function PolicyPage() {
         </ul>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4 text-justify">
         <h2 className="text-2xl font-semibold mt-8 text-blue-800">Email Management</h2>
         <p>
           Your email address will only be recorded if you choose to send a message. It
@@ -117,13 +117,13 @@ export default function PolicyPage() {
         </p>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4 text-justify">
         <h2 className="text-2xl font-semibold text-blue-800  mt-8">Hyperlinking Policy</h2>
 
         <h3 className="text-xl font-semibold mt-4">Links to external websites/portals</h3>
         <p>
           At many places in this Portal, you shall find links to other websites/portals.
-          These links have been placed for your convenience. HDC is not responsible for
+          These links have been placed for your convenience. State Data Center (SDC) is not responsible for
           the contents and reliability of the linked websites and does not necessarily
           endorse the views expressed in them. Mere presence of the link or its listing
           on this Portal should not be assumed as endorsement of any kind. We cannot

@@ -1,4 +1,4 @@
-// app\drugs\procurement
+// app\drugs\procurement\page.tsx
 "use client";
 
 import { motion } from "framer-motion";
@@ -21,7 +21,7 @@ export default function ProcurementPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.8 }}
-        className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
+        className="prose prose-lg max-w-none text-gray-700 leading-relaxed text-justify"
       >
         <p>
           JMHIDPCL follows a <span className="font-semibold">transparent procurement procedure</span> 
@@ -30,8 +30,8 @@ export default function ProcurementPage() {
         </p>
 
         <p>
-          Specifications for the purchase of drugs are prepared by the 
-          <span className="font-semibold"> Expert Committee</span> for both Essential Drug List (EDL) 
+          Specifications for the purchase of drugs are prepared by the{" "}
+          <span className="font-semibold">Expert Committee</span> for both Essential Drug List (EDL) 
           and non-EDL drugs, according to the requirements of hospitals. After quantifying the indents, 
           JMHIDPCL floats an online tender as per the purchase policy of CSPO, Health Department guidelines, 
           and decisions of the Board of Directors. Advertisements are also published in daily newspapers.
