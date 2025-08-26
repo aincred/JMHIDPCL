@@ -26,7 +26,7 @@ export default function MDDeskPage() {
         {/* MD Name */}
         <h2 className="text-xl font-semibold text-blue-800 mb-4">
           Managing Director <br />
-          <span className="text-black text-base">JMHIDPCL</span>
+          <span className="text-gray-600 text-base">JMHIDPCL</span>
         </h2>
 
         {/* Content */}
