@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft, Bell } from "lucide-react";
 
@@ -25,9 +24,9 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-6 md:px-16">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-3">
-          <div className="bg-cyan-600 text-white w-12 h-12 flex items-center justify-center rounded-full shadow-md">
+          <div className="bg-blue-800 text-white w-12 h-12 flex items-center justify-center rounded-full shadow-md">
             <Bell className="w-6 h-6" />
           </div>
           <h1 className="text-3xl font-bold text-gray-800">All Notifications</h1>
@@ -41,50 +40,47 @@ export default function NotificationsPage() {
         </Link>
       </div>
 
-      {/* Notifications List */}
+      {/* Notifications Table */}
       {notifications.length > 0 ? (
-        <motion.ul
-          initial="hidden"
-          animate="show"
-          variants={{
-            hidden: { opacity: 0 },
-            show: {
-              opacity: 1,
-              transition: { staggerChildren: 0.15 },
-            },
-          }}
-          className="space-y-4"
-        >
-          <AnimatePresence>
-            {notifications.map((n) => (
-              <motion.li
-                key={n.id}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  show: { opacity: 1, y: 0 },
-                }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-                layout
-                className="bg-white shadow-md rounded-xl p-5 hover:shadow-lg transition-all border border-gray-200"
-              >
-                <p className="font-semibold text-gray-800 text-lg">{n.title}</p>
-                <p className="text-sm text-gray-500">{n.date}</p>
-                {n.fileUrl && (
-                  <a
-                    href={n.fileUrl}
-                    target="_blank"
-                    className="text-cyan-700 text-sm hover:underline mt-2 inline-block"
-                  >
-                    View File →
-                  </a>
-                )}
-              </motion.li>
-            ))}
-          </AnimatePresence>
-        </motion.ul>
+        <div className="overflow-x-auto shadow-lg rounded-xl">
+          <table className="w-full border-collapse bg-white rounded-xl overflow-hidden">
+            <thead className="bg-blue-800 text-white">
+              <tr>
+                <th className="px-6 py-3 text-left font-semibold">Title</th>
+                <th className="px-6 py-3 text-left font-semibold">Date</th>
+                <th className="px-6 py-3 text-center font-semibold">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {notifications.map((n, i) => (
+                <tr
+                  key={n.id}
+                  className={`border-t ${
+                    i % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  } hover:bg-cyan-50 transition`}
+                >
+                  <td className="px-6 py-3 text-gray-800">{n.title}</td>
+                  <td className="px-6 py-3 text-gray-600">{n.date}</td>
+                  <td className="px-6 py-3 text-center">
+                    {n.fileUrl ? (
+                      <a
+                        href={n.fileUrl}
+                        target="_blank"
+                        className="inline-block px-4 py-1.5 text-sm font-medium text-white bg-cyan-600 rounded-full shadow hover:bg-cyan-700 transition"
+                      >
+                        View
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">No File</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
-        <p className="text-center text-gray-600 text-lg">
+        <p className="text-center text-gray-600 text-lg mt-10">
           No notifications available.
         </p>
       )}
