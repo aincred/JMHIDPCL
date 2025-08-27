@@ -56,6 +56,14 @@ export default function SideNav() {
               <ImageIcon size={18} /> Gallery
             </Link>
           </li>
+         <li className="border-b border-blue-700">
+  <Link
+    href="/admin/our-team"
+    className="flex items-center gap-2 p-3 hover:bg-blue-700"
+  >
+    <Users size={18} /> Our Team
+  </Link>
+</li>
           <li className="border-b border-blue-700">
             <Link
               href="/admin/uplaod"
