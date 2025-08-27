@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -15,7 +14,10 @@ export default function AdminLogin() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (username === "admin" && password === "admin123") {
+    const savedEmail = localStorage.getItem("admin_email") || "admin";
+    const savedPass = localStorage.getItem("admin_password") || "admin123";
+
+    if (username === savedEmail && password === savedPass) {
       localStorage.setItem("admin_auth", "true");
       router.push("/admin/dashboard");
     } else {
@@ -31,7 +33,7 @@ export default function AdminLogin() {
       >
         <div className="flex flex-col items-center mb-6">
           <Image
-            src="/jmh-logo.jpg" 
+            src="/jmh-logo.jpg"
             alt="JMHIDPCL Logo"
             width={80}
             height={80}
@@ -50,7 +52,7 @@ export default function AdminLogin() {
         )}
 
         <Input
-          placeholder="Username"
+          placeholder="Username / Email"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="mb-4"

@@ -1,94 +1,128 @@
-// app/drugs/item-wise-rate-contract/page.tsx
-"use client"
+"use client";
 
-import { useState } from "react"
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react";
 
 type RateContract = {
-  slNo: number
-  indentSlNo: number
-  item: string
-  dosage: string
-  packSize: string
-  l1Rate: string
-  bidder: string
-}
+  id: number;
+  indentNo: string;
+  item: string;
+  dosage: string;
+  packSize: string;
+  l1Rate: string;
+  bidder: string;
+};
 
-const data: RateContract[] = [
-  { slNo: 1, indentSlNo: 1, item: "Acetazolamide", dosage: "Tablet 250 mg", packSize: "(1x10) x10 tabs", l1Rate: "1.37", bidder: "Medipol" },
-  { slNo: 2, indentSlNo: 3, item: "Adrenaline", dosage: "Injection 1mg/ml 1ml. ample.", packSize: "ampoule", l1Rate: "2.92", bidder: "HIMALAYA MEDITEK PVT LTD" },
-  { slNo: 3, indentSlNo: 4, item: "Albendazole", dosage: "Oral liquid 200 mg/5ml", packSize: "10 ml bottle", l1Rate: "4.7", bidder: "REVAT LABORATORIES PRIVATE LIMITED" },
-  { slNo: 4, indentSlNo: 5, item: "Albendazole", dosage: "Tablet 400mg.", packSize: "(1x10) x10 tabs", l1Rate: "1.6", bidder: "Healers" },
-  { slNo: 5, indentSlNo: 6, item: "Allopurinol", dosage: "Tablet 100mg.", packSize: "(1x10) x10 tabs", l1Rate: "0.68", bidder: "CMG Biotech" },
-  { slNo: 6, indentSlNo: 7, item: "Allopurinol", dosage: "Tablet 300mg", packSize: "(1x10) x10 tabs", l1Rate: "1.89", bidder: "JACKSON LABORATORIES PVT LTD" },
-  { slNo: 7, indentSlNo: 8, item: "Amiodarone", dosage: "Tablet 100 mg", packSize: "(1x10) x10 tabs", l1Rate: "1.84", bidder: "MASCOT HEALTH SERIES PVT LTD" },
-  { slNo: 8, indentSlNo: 9, item: "Amiodarone", dosage: "Tablet 200 mg", packSize: "(1x10) x10 tabs", l1Rate: "3.19", bidder: "MASCOT HEALTH SERIES PVT LTD" },
-  { slNo: 9, indentSlNo: 10, item: "Amitriptyline", dosage: "Tablet 25 mg", packSize: "(1x10) x10 tabs", l1Rate: "0.24", bidder: "MASCOT HEALTH SERIES PVT LTD" },
-  { slNo: 10, indentSlNo: 12, item: "Amlodipine", dosage: "Tablet 2.5 mg", packSize: "(1x10) x10 tabs", l1Rate: "0.17", bidder: "JACKSON LABORATORIES PVT LTD and CMG Biotech" },
-  // ... continue filling with your list
-]
+export default function PublicRateContractPage() {
+  const [contracts, setContracts] = useState<RateContract[]>([]);
+  const [search, setSearch] = useState("");
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
 
-export default function ItemWiseRateContractPage() {
-  const [search, setSearch] = useState("")
+  // Load from localStorage (whatever admin added in dashboard)
+  useEffect(() => {
+    const saved = localStorage.getItem("rate_contracts");
+    if (saved) {
+      setContracts(JSON.parse(saved));
+    }
+  }, []);
 
-  const filteredData = data.filter((d) =>
-    d.item.toLowerCase().includes(search.toLowerCase()) ||
-    d.dosage.toLowerCase().includes(search.toLowerCase()) ||
-    d.bidder.toLowerCase().includes(search.toLowerCase())
-  )
+  // Search filter
+  const filtered = contracts.filter(
+    (c) =>
+      c.item.toLowerCase().includes(search.toLowerCase()) ||
+      c.dosage.toLowerCase().includes(search.toLowerCase()) ||
+      c.bidder.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <Card className="m-6 shadow-lg rounded-2xl">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold">Item Wise Rate Contract</CardTitle>
-        <Input
-          placeholder="Search by item, dosage, or bidder..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="mt-2"
-        />
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto max-h-[600px] overflow-y-scroll">
-          <Table>
-            <TableCaption>A list of approved rate contracts.</TableCaption>
-            <TableHeader>
-              <TableRow className="bg-gray-100">
-                <TableHead>Sl. No.</TableHead>
-                <TableHead>Indent Sl. No.</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Dosage form and strength</TableHead>
-                <TableHead>Pack Size</TableHead>
-                <TableHead>L-1 Rate</TableHead>
-                <TableHead>Bidder Name</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredData.map((row) => (
-                <TableRow key={row.slNo}>
-                  <TableCell>{row.slNo}</TableCell>
-                  <TableCell>{row.indentSlNo}</TableCell>
-                  <TableCell>{row.item}</TableCell>
-                  <TableCell>{row.dosage}</TableCell>
-                  <TableCell>{row.packSize}</TableCell>
-                  <TableCell>{row.l1Rate}</TableCell>
-                  <TableCell>{row.bidder}</TableCell>
-                </TableRow>
+    <section className="p-6 bg-gray-50 min-h-screen">
+      <div className="bg-white rounded-xl shadow-lg p-6 space-y-6">
+        <h1 className="text-2xl font-bold text-blue-800">Item Wise Rate Contract</h1>
+        <p className="text-sm text-gray-600">
+          Search by item, dosage, or bidder...
+        </p>
+        <p className="text-sm text-gray-500 italic">
+          A list of approved rate contracts.
+        </p>
+
+        {/* Controls */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">Show</label>
+            <select
+              value={entriesPerPage}
+              onChange={(e) => setEntriesPerPage(Number(e.target.value))}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              {[5, 10, 20, 50].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
               ))}
-            </TableBody>
-          </Table>
+            </select>
+            <span className="text-sm text-gray-600">entries per page</span>
+          </div>
+
+          <input
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border rounded px-3 py-1 text-sm"
+          />
         </div>
-      </CardContent>
-    </Card>
-  )
+
+        {/* Table */}
+        <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-blue-600 text-white text-sm uppercase tracking-wide">
+              <tr>
+                <th className="px-4 py-3">Sl. No.</th>
+                <th className="px-4 py-3">Indent Sl. No.</th>
+                <th className="px-4 py-3">Item</th>
+                <th className="px-4 py-3">Dosage form & Strength</th>
+                <th className="px-4 py-3">Pack Size</th>
+                <th className="px-4 py-3">L-1 Rate (₹)</th>
+                <th className="px-4 py-3">Bidder / RC Holder</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {filtered.slice(0, entriesPerPage).map((c, idx) => (
+                <tr
+                  key={c.id}
+                  className="hover:bg-blue-50 transition-colors duration-200"
+                >
+                  <td className="px-4 py-3">{idx + 1}</td>
+                  <td className="px-4 py-3 text-gray-700">{c.indentNo}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {c.item}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{c.dosage}</td>
+                  <td className="px-4 py-3 text-gray-600">{c.packSize}</td>
+                  <td className="px-4 py-3 text-gray-600">{c.l1Rate}</td>
+                  <td className="px-4 py-3 text-gray-600">{c.bidder}</td>
+                </tr>
+              ))}
+
+              {filtered.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="text-center px-4 py-6 text-gray-500"
+                  >
+                    No rate contracts found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer */}
+        <p className="text-sm text-gray-600">
+          Showing {filtered.length > 0 ? 1 : 0} to{" "}
+          {Math.min(entriesPerPage, filtered.length)} of {filtered.length} entries
+        </p>
+      </div>
+    </section>
+  );
 }

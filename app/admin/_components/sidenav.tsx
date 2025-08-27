@@ -1,25 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { 
   LayoutDashboard, 
   FileText, 
   Image as ImageIcon, 
-  LogOut, 
-  Download, 
-  FileSpreadsheet 
+  ClipboardList, 
+  FileSpreadsheet, 
+  Users, 
+  FileArchive, 
+  FileCheck, 
+  Bell 
 } from "lucide-react";
 
 export default function SideNav() {
-  const router = useRouter();
-
-  const handleLogout = () => {
-    localStorage.removeItem("admin_auth");
-    router.push("/login");
-  };
-
   return (
     <aside className="w-64 bg-blue-800 text-white h-screen flex flex-col fixed left-0 top-0">
       {/* Logo */}
@@ -63,10 +58,10 @@ export default function SideNav() {
           </li>
           <li className="border-b border-blue-700">
             <Link
-              href="/admin/downloads"
+              href="/admin/uplaod"
               className="flex items-center gap-2 p-3 hover:bg-blue-700"
             >
-              <Download size={18} /> Downloads
+              <ClipboardList size={18} /> Upload Pdf
             </Link>
           </li>
           <li className="border-b border-blue-700">
@@ -77,16 +72,40 @@ export default function SideNav() {
               <FileSpreadsheet size={18} /> Tenders
             </Link>
           </li>
+          <li className="border-b border-blue-700">
+            <Link
+              href="/admin/rc-holders"
+              className="flex items-center gap-2 p-3 hover:bg-blue-700"
+            >
+              <Users size={18} /> R C Holders
+            </Link>
+          </li>
+          <li className="border-b border-blue-700">
+            <Link
+              href="/admin/rate-contract"
+              className="flex items-center gap-2 p-3 hover:bg-blue-700"
+            >
+              <FileArchive size={18} /> Rate Contract
+            </Link>
+          </li>
+          <li className="border-b border-blue-700">
+            <Link
+              href="/admin/item-wise-rate"
+              className="flex items-center gap-2 p-3 hover:bg-blue-700"
+            >
+              <FileCheck size={18} /> Item Wise Rate Contract
+            </Link>
+          </li>
+          <li className="border-b border-blue-700">
+            <Link
+              href="/admin/notifications"
+              className="flex items-center gap-2 p-3 hover:bg-blue-700"
+            >
+              <Bell size={18} /> Notifications
+            </Link>
+          </li>
         </ul>
       </nav>
-
-      {/* Logout */}
-      <button
-        onClick={handleLogout}
-        className="m-4 flex items-center justify-center gap-2 p-2 bg-red-500 text-white rounded hover:bg-red-600"
-      >
-        <LogOut size={18} /> Logout
-      </button>
     </aside>
   );
 }

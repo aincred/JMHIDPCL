@@ -1,12 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell, Link2, Info, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+type Notification = {
+  id: number;
+  title: string;
+  date: string;
+  fileUrl?: string;
+};
 
 export default function HomePage() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Load notifications from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("notifications");
+    if (saved) {
+      setNotifications(JSON.parse(saved));
+    }
+  }, []);
+
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
@@ -59,8 +77,66 @@ export default function HomePage() {
                 Notifications
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-5 text-gray-600 text-sm text-center">
-              <p>No new notifications available.</p>
+            <CardContent className="p-5 text-gray-600 text-sm space-y-3">
+              {notifications.length > 0 ? (
+                <motion.ul
+                  initial="hidden"
+                  animate="show"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    show: {
+                      opacity: 1,
+                      transition: { staggerChildren: 0.15 },
+                    },
+                  }}
+                  className="space-y-2 max-h-64 overflow-y-auto pr-2"
+                >
+                  <AnimatePresence>
+                    {notifications.map((n) => (
+                      <motion.li
+                        key={n.id}
+                        variants={{
+                          hidden: { opacity: 0, y: 20 },
+                          show: { opacity: 1, y: 0 },
+                        }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.4 }}
+                        layout
+                        className="border-b pb-2 bg-white/50 rounded-md p-2 hover:bg-white/80 transition-colors"
+                      >
+                        <p className="font-medium text-gray-800">{n.title}</p>
+                        <p className="text-xs text-gray-500">{n.date}</p>
+                        {n.fileUrl && (
+                          <a
+                            href={n.fileUrl}
+                            target="_blank"
+                            className="text-cyan-700 text-xs hover:underline"
+                          >
+                            View File
+                          </a>
+                        )}
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                </motion.ul>
+              ) : (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-center"
+                >
+                  No new notifications available.
+                </motion.p>
+              )}
+              <div className="text-center mt-4">
+                <Link
+                  href="/notifications"
+                  className="text-cyan-700 font-medium hover:underline text-sm"
+                >
+                  View All →
+                </Link>
+              </div>
             </CardContent>
           </motion.div>
 
@@ -82,7 +158,10 @@ export default function HomePage() {
             <CardContent className="p-5 flex flex-col gap-3">
               {[
                 { href: "https://www.mohfw.gov.in", label: "Ministry of Health" },
-                { href: "https://jrhms.jharkhand.gov.in", label: "National Health Mission" },
+                {
+                  href: "https://jrhms.jharkhand.gov.in",
+                  label: "National Health Mission",
+                },
                 { href: "https://eprocure.gov.in", label: "eProcurement System" },
                 { href: "https://jharkhand.gov.in", label: "Jharkhand State Portal" },
               ].map((link, index) => (
@@ -174,6 +253,7 @@ export default function HomePage() {
     </div>
   );
 }
+
 
 
 
