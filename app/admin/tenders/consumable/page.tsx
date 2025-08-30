@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 type Tender = {
-  id: number;
+  id: string;
   title: string;
   reference: string;
   published: string;
-  start: string;
-  end: string;
-  fileUrl?: string;
+  start_date: string;
+  end_date: string;
+  file_url?: string;
 };
 
 export default function ConsumableTendersPage() {
@@ -26,56 +26,89 @@ export default function ConsumableTendersPage() {
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("consumable_tenders");
-    if (saved) {
-      setTenders(JSON.parse(saved));
+  // Load tenders from DB
+  const fetchTenders = async () => {
+    const { data, error } = await supabase
+      .from("consumable_tenders")
+      .select("*")
+      .order("published", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching tenders:", error.message);
+    } else {
+      setTenders(data || []);
     }
+  };
+
+  useEffect(() => {
+    fetchTenders();
   }, []);
 
-  // Save to localStorage whenever tenders change
-  useEffect(() => {
-    if (tenders.length > 0) {
-      localStorage.setItem("consumable_tenders", JSON.stringify(tenders));
-    }
-  }, [tenders]);
-
   // Handle upload
-  const handleAddTender = (e: React.FormEvent) => {
+  const handleAddTender = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !reference || !published || !start || !end) return;
+    setLoading(true);
 
     let fileUrl = "";
     if (file) {
-      fileUrl = URL.createObjectURL(file);
+      const fileName = `${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("consumable_tenders")
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error("File upload error:", uploadError.message);
+      } else {
+        const { data: publicUrlData } = supabase.storage
+          .from("consumable_tenders")
+          .getPublicUrl(fileName);
+
+        fileUrl = publicUrlData.publicUrl;
+      }
     }
 
-    const newTender: Tender = {
-      id: Date.now(),
-      title,
-      reference,
-      published,
-      start,
-      end,
-      fileUrl,
-    };
+    const { error } = await supabase.from("consumable_tenders").insert([
+      {
+        title,
+        reference,
+        published,
+        start_date: start,
+        end_date: end,
+        file_url: fileUrl,
+      },
+    ]);
 
-    setTenders([newTender, ...tenders]);
-    setTitle("");
-    setReference("");
-    setPublished("");
-    setStart("");
-    setEnd("");
-    setFile(null);
+    if (error) {
+      console.error("Insert error:", error.message);
+    } else {
+      await fetchTenders();
+      setTitle("");
+      setReference("");
+      setPublished("");
+      setStart("");
+      setEnd("");
+      setFile(null);
+    }
+    setLoading(false);
   };
 
   // Handle delete
-  const handleDelete = (id: number) => {
-    setTenders(tenders.filter((t) => t.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase
+      .from("consumable_tenders")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Delete error:", error.message);
+    } else {
+      setTenders(tenders.filter((t) => t.id !== id));
+    }
   };
 
   // Filter tenders
@@ -96,7 +129,7 @@ export default function ConsumableTendersPage() {
       </button>
 
       <div className="bg-white rounded-xl shadow-lg p-6 space-y-6">
-        <h1 className="text-2xl font-bold text-gray-800">Consumable Tenders</h1>
+        <h1 className="text-2xl font-bold text-blue-800">Consumable Tenders</h1>
         <p className="text-sm text-gray-600">All Records</p>
 
         {/* Upload Form */}
@@ -104,72 +137,51 @@ export default function ConsumableTendersPage() {
           onSubmit={handleAddTender}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 border p-6 rounded-lg bg-gray-50"
         >
-          <div>
-            <label className="text-sm font-medium text-gray-700">Title</label>
-            <input
-              type="text"
-              placeholder="Tender title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700">
-              Reference No.
-            </label>
-            <input
-              type="text"
-              placeholder="Reference No."
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700">
-              Published Date
-            </label>
-            <input
-              type="date"
-              value={published}
-              onChange={(e) => setPublished(e.target.value)}
-              className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700">Start Date</label>
-            <input
-              type="date"
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
-              className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700">End Date</label>
-            <input
-              type="date"
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
-              className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700">PDF File</label>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Tender title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="text"
+            placeholder="Reference No."
+            value={reference}
+            onChange={(e) => setReference(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="date"
+            value={published}
+            onChange={(e) => setPublished(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="date"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="date"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="border rounded-lg px-3 py-2 text-sm"
+          />
           <div className="md:col-span-3">
             <button
               type="submit"
+              disabled={loading}
               className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
-              Add Tender
+              {loading ? "Uploading..." : "Add Tender"}
             </button>
           </div>
         </form>
@@ -208,10 +220,11 @@ export default function ConsumableTendersPage() {
               <tr>
                 <th className="px-4 py-3">S.no.</th>
                 <th className="px-4 py-3">Title</th>
-                <th className="px-4 py-3">Reference No.</th>
-                <th className="px-4 py-3">Published Date</th>
-                <th className="px-4 py-3">Start Date</th>
-                <th className="px-4 py-3">End Date</th>
+                <th className="px-4 py-3">Reference</th>
+                <th className="px-4 py-3">Published</th>
+                <th className="px-4 py-3">Start</th>
+                <th className="px-4 py-3">End</th>
+                <th className="px-4 py-3">File</th>
                 <th className="px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
@@ -225,31 +238,35 @@ export default function ConsumableTendersPage() {
                   <td className="px-4 py-3 font-medium text-gray-800">{t.title}</td>
                   <td className="px-4 py-3 text-gray-600">{t.reference}</td>
                   <td className="px-4 py-3 text-gray-600">{t.published}</td>
-                  <td className="px-4 py-3 text-gray-600">{t.start}</td>
-                  <td className="px-4 py-3 text-gray-600">{t.end}</td>
+                  <td className="px-4 py-3 text-gray-600">{t.start_date}</td>
+                  <td className="px-4 py-3 text-gray-600">{t.end_date}</td>
+                  <td className="px-4 py-3">
+                    {t.file_url ? (
+                      <a
+                        href={t.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 text-xs font-medium bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                      >
+                        View
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 text-xs">No File</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 flex gap-2 justify-center">
-                    <Link
-                      href={`/admin/tenders/consumable/view/${t.id}`}
-                      className="px-3 py-1 text-xs font-medium bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                    >
-                      View
-                    </Link>
                     <button
                       onClick={() => handleDelete(t.id)}
-                      className="px-3 py-1 text-xs font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                      className="px-3 py-1 text-xs font-medium bg-red-500 text-white rounded-lg hover:bg-red-600"
                     >
                       Delete
                     </button>
                   </td>
                 </tr>
               ))}
-
               {filtered.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={7}
-                    className="text-center px-4 py-6 text-gray-500"
-                  >
+                  <td colSpan={8} className="text-center py-6 text-gray-500">
                     No tenders found.
                   </td>
                 </tr>

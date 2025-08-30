@@ -1,13 +1,25 @@
 "use client";
 
 import { Menu, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+
+  // Prevent background scroll when mobile menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
 
   const navItems = [
     { label: "Home", href: "/" },
@@ -178,26 +190,32 @@ export default function Header() {
 
         {/* Mobile Dropdown */}
         {menuOpen && (
-          <div className="md:hidden bg-blue-800 px-4 py-3 w-full">
-            <ul className="flex flex-col">
+          <div className="md:hidden bg-blue-900 text-white px-4 py-4 w-full max-h-[90vh] overflow-y-auto">
+            <ul className="flex flex-col gap-2">
               {navItems.map((item, i) => (
-                <li key={i} className="border-b border-blue-700 py-2">
+                <li key={i} className="border-b border-blue-800">
                   {item.children ? (
                     <>
                       <button
                         onClick={() => setOpenDropdown(openDropdown === i ? null : i)}
-                        className="flex justify-between w-full text-left"
+                        className="flex justify-between items-center w-full py-3 px-2 text-left hover:bg-blue-800 rounded transition"
                       >
-                        {item.label}
-                        <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === i ? "rotate-180" : ""}`} />
+                        <span>{item.label}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform ${openDropdown === i ? "rotate-180" : ""}`}
+                        />
                       </button>
                       {openDropdown === i && (
-                        <ul className="pl-4 mt-2 flex flex-col gap-1 text-sm text-gray-200 w-full">
+                        <ul className="pl-4 mt-1 flex flex-col gap-1 text-gray-200">
                           {item.children.map((child, j) => {
                             const isPDF = child.href?.toLowerCase().endsWith(".pdf");
                             return (
-                              <li key={j} className="hover:underline cursor-pointer">
-                                <Link href={child.href} {...(isPDF ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                              <li key={j} className="hover:text-blue-300 transition">
+                                <Link
+                                  href={child.href}
+                                  {...(isPDF ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                                  className="block py-1"
+                                >
                                   {child.label}
                                 </Link>
                               </li>
@@ -207,14 +225,19 @@ export default function Header() {
                       )}
                     </>
                   ) : (
-                    <Link href={item.href || ""}>{item.label}</Link>
+                    <Link
+                      href={item.href || ""}
+                      className="block py-3 px-2 hover:bg-blue-800 rounded transition"
+                    >
+                      {item.label}
+                    </Link>
                   )}
                 </li>
               ))}
               <li className="mt-2">
                 <Link
                   href="/login"
-                  className="block px-4 py-2 bg-white text-blue-900 font-semibold rounded text-center"
+                  className="block w-full py-2 px-2 bg-white text-blue-900 font-semibold rounded text-center hover:bg-blue-100 transition"
                 >
                   Login
                 </Link>

@@ -3,22 +3,36 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Bell } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 type Notification = {
   id: number;
   title: string;
   date: string;
-  fileUrl?: string;
+  file_public_url?: string;
 };
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem("notifications");
-    if (saved) {
-      setNotifications(JSON.parse(saved));
-    }
+    const fetchNotifications = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching notifications:", error);
+      } else {
+        setNotifications(data as Notification[]);
+      }
+      setLoading(false);
+    };
+
+    fetchNotifications();
   }, []);
 
   return (
@@ -41,7 +55,9 @@ export default function NotificationsPage() {
       </div>
 
       {/* Notifications Table */}
-      {notifications.length > 0 ? (
+      {loading ? (
+        <p className="text-center text-gray-600 text-lg mt-10">Loading...</p>
+      ) : notifications.length > 0 ? (
         <div className="overflow-x-auto shadow-lg rounded-xl">
           <table className="w-full border-collapse bg-white rounded-xl overflow-hidden">
             <thead className="bg-blue-800 text-white">
@@ -62,9 +78,9 @@ export default function NotificationsPage() {
                   <td className="px-6 py-3 text-gray-800">{n.title}</td>
                   <td className="px-6 py-3 text-gray-600">{n.date}</td>
                   <td className="px-6 py-3 text-center">
-                    {n.fileUrl ? (
+                    {n.file_public_url ? (
                       <a
-                        href={n.fileUrl}
+                        href={n.file_public_url}
                         target="_blank"
                         className="inline-block px-4 py-1.5 text-sm font-medium text-white bg-cyan-600 rounded-full shadow hover:bg-cyan-700 transition"
                       >

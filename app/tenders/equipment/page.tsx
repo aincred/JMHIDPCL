@@ -2,26 +2,39 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 type Tender = {
   id: number;
   title: string;
   reference: string;
   published: string;
-  start: string;
-  end: string;
-  fileUrl?: string;
+  start_date: string;
+  end_date: string;
+  file_url?: string;
 };
 
 export default function PublicEquipmentTenders() {
   const [tenders, setTenders] = useState<Tender[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Load tenders from localStorage (later replace with API/db fetch)
-  useEffect(() => {
-    const saved = localStorage.getItem("equipment_tenders");
-    if (saved) {
-      setTenders(JSON.parse(saved));
+  // ✅ Fetch tenders from Supabase
+  const fetchTenders = async () => {
+    const { data, error } = await supabase
+      .from("equipment_tenders")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error) {
+      console.error("Fetch error:", error.message);
+    } else {
+      setTenders(data as Tender[]);
     }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchTenders();
   }, []);
 
   return (
@@ -45,39 +58,42 @@ export default function PublicEquipmentTenders() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {tenders.map((t, idx) => (
-              <tr key={t.id} className="hover:bg-blue-50">
-                <td className="px-4 py-3">{idx + 1}</td>
-                <td className="px-4 py-3 font-medium text-gray-800">
-                  {t.title}
-                </td>
-                <td className="px-4 py-3 text-gray-600">{t.reference}</td>
-                <td className="px-4 py-3 text-gray-600">{t.published}</td>
-                <td className="px-4 py-3 text-gray-600">{t.start}</td>
-                <td className="px-4 py-3 text-gray-600">{t.end}</td>
-                <td className="px-4 py-3 text-center">
-                  {t.fileUrl ? (
-                    <Link
-                      href={t.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1 text-xs font-medium bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                    >
-                      View
-                    </Link>
-                  ) : (
-                    <span className="text-gray-400 text-xs">No File</span>
-                  )}
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="text-center py-6 text-gray-500">
+                  Loading tenders...
                 </td>
               </tr>
-            ))}
-
-            {tenders.length === 0 && (
+            ) : tenders.length > 0 ? (
+              tenders.map((t, idx) => (
+                <tr key={t.id} className="hover:bg-blue-50">
+                  <td className="px-4 py-3">{idx + 1}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {t.title}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{t.reference}</td>
+                  <td className="px-4 py-3 text-gray-600">{t.published}</td>
+                  <td className="px-4 py-3 text-gray-600">{t.start_date}</td>
+                  <td className="px-4 py-3 text-gray-600">{t.end_date}</td>
+                  <td className="px-4 py-3 text-center">
+                    {t.file_url ? (
+                      <Link
+                        href={t.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 text-xs font-medium bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                      >
+                        View
+                      </Link>
+                    ) : (
+                      <span className="text-gray-400 text-xs">No File</span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
-                <td
-                  colSpan={7}
-                  className="text-center px-4 py-6 text-gray-500"
-                >
+                <td colSpan={7} className="text-center px-4 py-6 text-gray-500">
                   No tenders available.
                 </td>
               </tr>

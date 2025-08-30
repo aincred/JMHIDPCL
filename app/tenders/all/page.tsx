@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 type TenderRaw = {
-  id: number;
+  id: string;
   title: string;
   reference: string;
   published: string;
-  start: string;
-  end: string;
-  fileUrl?: string;
+  start_date: string;
+  end_date: string;
+  file_url?: string;
 };
 
 type Tender = TenderRaw & {
@@ -22,37 +23,51 @@ export default function PublicAllTendersPage() {
   const [search, setSearch] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(10);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  // ✅ format dates nicely
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
-    const loadTenders = <T extends TenderRaw>(
-      key: string,
-      type: Tender["type"]
-    ): Tender[] => {
-      const data = localStorage.getItem(key);
-      if (!data) return [];
-      try {
-        const parsed: T[] = JSON.parse(data);
-        return parsed.map((t) => ({ ...t, type }));
-      } catch {
-        return [];
+  // ✅ load tenders from Supabase
+  useEffect(() => {
+    const fetchTenders = async () => {
+      const categories: { table: string; type: Tender["type"] }[] = [
+        { table: "drug_tenders", type: "Drug" },
+        { table: "equipment_tenders", type: "Equipment" },
+        { table: "consumable_tenders", type: "Consumable" },
+        { table: "covid_tenders", type: "Covid-19" },
+      ];
+
+      let all: Tender[] = [];
+
+      for (const { table, type } of categories) {
+        const { data, error } = await supabase.from(table).select("*");
+        if (error) {
+          console.error(`Error loading ${table}:`, error.message);
+          continue;
+        }
+        const mapped = (data as TenderRaw[]).map((t) => ({
+          ...t,
+          type,
+        }));
+        all = [...all, ...mapped];
       }
+
+      all.sort(
+        (a, b) =>
+          new Date(b.published).getTime() - new Date(a.published).getTime()
+      );
+
+      setTenders(all);
     };
 
-    const allTenders: Tender[] = [
-      ...loadTenders<TenderRaw>("drug_tenders", "Drug"),
-      ...loadTenders<TenderRaw>("equipment_tenders", "Equipment"),
-      ...loadTenders<TenderRaw>("consumable_tenders", "Consumable"),
-      ...loadTenders<TenderRaw>("covid_tenders", "Covid-19"),
-    ];
-
-    allTenders.sort(
-      (a, b) => new Date(b.published).getTime() - new Date(a.published).getTime()
-    );
-
-    setTenders(allTenders);
+    fetchTenders();
   }, []);
 
+  // ✅ filter tenders by search
   const filtered = tenders.filter(
     (t) =>
       t.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -117,18 +132,28 @@ export default function PublicAllTendersPage() {
                   className="hover:bg-blue-50 transition-colors duration-200"
                 >
                   <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 text-gray-600">{t.type}</td>
+                  <td className="px-4 py-3">
+                    <span className="px-2 py-1 text-xs font-semibold rounded-lg bg-blue-100 text-blue-800">
+                      {t.type}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 font-medium text-gray-800">
                     {t.title}
                   </td>
                   <td className="px-4 py-3 text-gray-600">{t.reference}</td>
-                  <td className="px-4 py-3 text-gray-600">{t.published}</td>
-                  <td className="px-4 py-3 text-gray-600">{t.start}</td>
-                  <td className="px-4 py-3 text-gray-600">{t.end}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {formatDate(t.published)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {formatDate(t.start_date)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {formatDate(t.end_date)}
+                  </td>
                   <td className="px-4 py-3 text-center">
-                    {t.fileUrl ? (
+                    {t.file_url ? (
                       <Link
-                        href={t.fileUrl}
+                        href={t.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-3 py-1 text-xs font-medium bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
@@ -157,8 +182,12 @@ export default function PublicAllTendersPage() {
 
         {/* Footer */}
         <p className="text-sm text-gray-600">
-          Showing {filtered.length > 0 ? 1 : 0} to{" "}
-          {Math.min(entriesPerPage, filtered.length)} of {filtered.length} entries
+          {filtered.length > 0
+            ? `Showing 1 to ${Math.min(
+                entriesPerPage,
+                filtered.length
+              )} of ${filtered.length} entries`
+            : "No entries available"}
         </p>
       </div>
     </section>

@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient"; // ✅ import supabase client
 
 type RateContract = {
-  id: number;
-  indentNo: string;
+  id: string;
+  indent_no: string;
   item: string;
   dosage: string;
-  packSize: string;
-  l1Rate: string;
+  pack_size: string;
+  l1_rate: string;
   bidder: string;
 };
 
@@ -17,15 +18,25 @@ export default function PublicRateContractPage() {
   const [search, setSearch] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(10);
 
-  // Load from localStorage (whatever admin added in dashboard)
+  // ✅ Load contracts from Supabase
   useEffect(() => {
-    const saved = localStorage.getItem("rate_contracts");
-    if (saved) {
-      setContracts(JSON.parse(saved));
-    }
+    const fetchContracts = async () => {
+      const { data, error } = await supabase
+        .from("rate_contracts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching contracts:", error.message);
+      } else {
+        setContracts(data || []);
+      }
+    };
+
+    fetchContracts();
   }, []);
 
-  // Search filter
+  // ✅ Search filter
   const filtered = contracts.filter(
     (c) =>
       c.item.toLowerCase().includes(search.toLowerCase()) ||
@@ -36,7 +47,9 @@ export default function PublicRateContractPage() {
   return (
     <section className="p-6 bg-gray-50 min-h-screen">
       <div className="bg-white rounded-xl shadow-lg p-6 space-y-6">
-        <h1 className="text-2xl font-bold text-blue-800">Item Wise Rate Contract</h1>
+        <h1 className="text-2xl font-bold text-blue-800">
+          Item Wise Rate Contract
+        </h1>
         <p className="text-sm text-gray-600">
           Search by item, dosage, or bidder...
         </p>
@@ -92,13 +105,13 @@ export default function PublicRateContractPage() {
                   className="hover:bg-blue-50 transition-colors duration-200"
                 >
                   <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 text-gray-700">{c.indentNo}</td>
+                  <td className="px-4 py-3 text-gray-700">{c.indent_no}</td>
                   <td className="px-4 py-3 font-medium text-gray-800">
                     {c.item}
                   </td>
                   <td className="px-4 py-3 text-gray-600">{c.dosage}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.packSize}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.l1Rate}</td>
+                  <td className="px-4 py-3 text-gray-600">{c.pack_size}</td>
+                  <td className="px-4 py-3 text-gray-600">{c.l1_rate}</td>
                   <td className="px-4 py-3 text-gray-600">{c.bidder}</td>
                 </tr>
               ))}

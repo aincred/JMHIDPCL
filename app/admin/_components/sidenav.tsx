@@ -4,9 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { 
   LayoutDashboard, 
-  FileText, 
   Image as ImageIcon, 
-  ClipboardList, 
   FileSpreadsheet, 
   Users, 
   FileArchive, 
@@ -40,14 +38,7 @@ export default function SideNav() {
               <LayoutDashboard size={18} /> Dashboard
             </Link>
           </li>
-          <li className="border-b border-blue-700">
-            <Link
-              href="/admin/certificates"
-              className="flex items-center gap-2 p-3 hover:bg-blue-700"
-            >
-              <FileText size={18} /> Certificates
-            </Link>
-          </li>
+         
           <li className="border-b border-blue-700">
             <Link
               href="/admin/gallery"
@@ -56,22 +47,16 @@ export default function SideNav() {
               <ImageIcon size={18} /> Gallery
             </Link>
           </li>
-         <li className="border-b border-blue-700">
-  <Link
-    href="/admin/our-team"
-    className="flex items-center gap-2 p-3 hover:bg-blue-700"
-  >
-    <Users size={18} /> Our Team
-  </Link>
-</li>
+
           <li className="border-b border-blue-700">
             <Link
-              href="/admin/uplaod"
+              href="/admin/our-team"
               className="flex items-center gap-2 p-3 hover:bg-blue-700"
             >
-              <ClipboardList size={18} /> Upload Pdf
+              <Users size={18} /> Our Team
             </Link>
           </li>
+          
           <li className="border-b border-blue-700">
             <Link
               href="/admin/tenders"
@@ -80,6 +65,7 @@ export default function SideNav() {
               <FileSpreadsheet size={18} /> Tenders
             </Link>
           </li>
+
           <li className="border-b border-blue-700">
             <Link
               href="/admin/rc-holders"
@@ -88,6 +74,7 @@ export default function SideNav() {
               <Users size={18} /> R C Holders
             </Link>
           </li>
+
           <li className="border-b border-blue-700">
             <Link
               href="/admin/rate-contract"
@@ -96,6 +83,7 @@ export default function SideNav() {
               <FileArchive size={18} /> Rate Contract
             </Link>
           </li>
+
           <li className="border-b border-blue-700">
             <Link
               href="/admin/item-wise-rate"
@@ -104,6 +92,7 @@ export default function SideNav() {
               <FileCheck size={18} /> Item Wise Rate Contract
             </Link>
           </li>
+
           <li className="border-b border-blue-700">
             <Link
               href="/admin/notifications"

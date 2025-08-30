@@ -9,25 +9,29 @@ type Tender = {
   title: string;
   reference: string;
   published: string;
-  start: string;
-  end: string;
+  start_date: string;
+  end_date: string;
   file_url?: string;
 };
 
-export default function PublicDrugTenders() {
+export default function PublicConsumableTenders() {
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
 
   // Load tenders from Supabase
   const fetchTenders = async () => {
     setLoading(true);
+    setErrorMsg("");
+
     const { data, error } = await supabase
-      .from("drug_tenders")
+      .from("consumable_tenders")
       .select("*")
       .order("id", { ascending: false });
 
     if (error) {
       console.error("Error fetching tenders:", error.message);
+      setErrorMsg("Failed to load tenders. Please try again later.");
     } else {
       setTenders(data as Tender[]);
     }
@@ -40,7 +44,9 @@ export default function PublicDrugTenders() {
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-10">
-      <h2 className="text-2xl font-bold text-blue-900 mb-2">Drug Tenders</h2>
+      <h2 className="text-2xl font-bold text-blue-900 mb-2">
+        Consumable Tenders
+      </h2>
       <p className="text-gray-600 mb-6">Latest published tenders</p>
 
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow">
@@ -63,15 +69,29 @@ export default function PublicDrugTenders() {
                   Loading tenders...
                 </td>
               </tr>
+            ) : errorMsg ? (
+              <tr>
+                <td colSpan={7} className="text-center py-6 text-red-500">
+                  {errorMsg}
+                </td>
+              </tr>
             ) : tenders.length > 0 ? (
               tenders.map((t, idx) => (
                 <tr key={t.id} className="hover:bg-blue-50">
                   <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{t.title}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {t.title}
+                  </td>
                   <td className="px-4 py-3 text-gray-600">{t.reference}</td>
-                  <td className="px-4 py-3 text-gray-600">{t.published}</td>
-                  <td className="px-4 py-3 text-gray-600">{t.start}</td>
-                  <td className="px-4 py-3 text-gray-600">{t.end}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {new Date(t.published).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {new Date(t.start_date).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {new Date(t.end_date).toLocaleDateString()}
+                  </td>
                   <td className="px-4 py-3 text-center">
                     {t.file_url ? (
                       <Link
@@ -90,7 +110,10 @@ export default function PublicDrugTenders() {
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center px-4 py-6 text-gray-500">
+                <td
+                  colSpan={7}
+                  className="text-center px-4 py-6 text-gray-500"
+                >
                   No tenders available.
                 </td>
               </tr>

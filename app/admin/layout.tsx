@@ -36,21 +36,30 @@
 import SideNav from "./_components/sidenav";
 import Header from "./_components/header";
 
-
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex  bg-gray-100">
+    <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <SideNav />
+      <aside className="fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-40">
+        <SideNav />
+      </aside>
 
-      {/* Main content */}
+      {/* Main content area */}
       <div className="flex-1 flex flex-col ml-64">
-        <Header />
-        <main className="mt-16 p-6 overflow-y-auto">{children}</main>
+        {/* Sticky header */}
+        <header className="fixed top-0 left-64 right-0 z-30 bg-white shadow">
+          <Header />
+        </header>
+
+        {/* Scrollable content */}
+        <main className="flex-1 mt-16 p-6 overflow-y-auto">
+          {children}
+        </main>
       </div>
     </div>
   );
 }
+
 
 // export default function AdminLayout({ children }: { children: React.ReactNode }) {
 //   return (

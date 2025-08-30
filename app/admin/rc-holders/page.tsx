@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 type RCHolder = {
-  id: number;
-  indentNo: string;
+  id: string;
+  indent_no: string;
   item: string;
   dosage: string;
-  packSize: string;
-  l1Rate: string;
+  pack_size: string;
+  l1_rate: string;
   bidder: string;
 };
 
@@ -25,60 +26,52 @@ export default function RCHoldersPage() {
   const [l1Rate, setL1Rate] = useState("");
   const [bidder, setBidder] = useState("");
 
-  // Load from localStorage
+  // Load from Supabase
+  const fetchHolders = async () => {
+    const { data, error } = await supabase
+      .from("rc_holders")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) setHolders(data);
+  };
+
   useEffect(() => {
-    const saved = localStorage.getItem("rc_holders");
-    if (saved) {
-      setHolders(JSON.parse(saved));
-    } else {
-      const defaultHolder: RCHolder = {
-        id: 1,
-        indentNo: "IND-2023-001",
-        item: "Paracetamol",
-        dosage: "Tablet 500 mg",
-        packSize: "10x10",
-        l1Rate: "₹45.00",
-        bidder: "ABC Pharma Pvt Ltd",
-      };
-      setHolders([defaultHolder]);
-      localStorage.setItem("rc_holders", JSON.stringify([defaultHolder]));
-    }
+    fetchHolders();
   }, []);
 
-  // Save to localStorage
-  useEffect(() => {
-    if (holders.length > 0) {
-      localStorage.setItem("rc_holders", JSON.stringify(holders));
-    }
-  }, [holders]);
-
   // Add Holder
-  const handleAddHolder = (e: React.FormEvent) => {
+  const handleAddHolder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!indentNo || !item || !dosage || !packSize || !l1Rate || !bidder) return;
 
-    const newHolder: RCHolder = {
-      id: Date.now(),
-      indentNo,
-      item,
-      dosage,
-      packSize,
-      l1Rate,
-      bidder,
-    };
+    const { error } = await supabase.from("rc_holders").insert([
+      {
+        indent_no: indentNo,
+        item,
+        dosage,
+        pack_size: packSize,
+        l1_rate: l1Rate,
+        bidder,
+      },
+    ]);
 
-    setHolders([newHolder, ...holders]);
-    setIndentNo("");
-    setItem("");
-    setDosage("");
-    setPackSize("");
-    setL1Rate("");
-    setBidder("");
+    if (!error) {
+      fetchHolders(); // refresh list
+      setIndentNo("");
+      setItem("");
+      setDosage("");
+      setPackSize("");
+      setL1Rate("");
+      setBidder("");
+    }
   };
 
   // Delete
-  const handleDelete = (id: number) => {
-    setHolders(holders.filter((h) => h.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("rc_holders").delete().eq("id", id);
+    if (!error) {
+      setHolders(holders.filter((h) => h.id !== id));
+    }
   };
 
   // Search filter
@@ -101,9 +94,7 @@ export default function RCHoldersPage() {
           className="grid grid-cols-1 md:grid-cols-3 gap-4 border p-6 rounded-lg bg-gray-50"
         >
           <div>
-            <label className="text-sm font-medium text-gray-700">
-              Indent Sl. No.
-            </label>
+            <label className="text-sm font-medium text-gray-700">Indent Sl. No.</label>
             <input
               type="text"
               placeholder="Indent No."
@@ -123,9 +114,7 @@ export default function RCHoldersPage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">
-              Dosage form & Strength
-            </label>
+            <label className="text-sm font-medium text-gray-700">Dosage form & Strength</label>
             <input
               type="text"
               placeholder="Dosage"
@@ -218,16 +207,13 @@ export default function RCHoldersPage() {
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
               {filtered.slice(0, entriesPerPage).map((h, idx) => (
-                <tr
-                  key={h.id}
-                  className="hover:bg-blue-50 transition-colors duration-200"
-                >
+                <tr key={h.id} className="hover:bg-blue-50 transition-colors duration-200">
                   <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 text-gray-700">{h.indentNo}</td>
+                  <td className="px-4 py-3 text-gray-700">{h.indent_no}</td>
                   <td className="px-4 py-3 font-medium text-gray-800">{h.item}</td>
                   <td className="px-4 py-3 text-gray-600">{h.dosage}</td>
-                  <td className="px-4 py-3 text-gray-600">{h.packSize}</td>
-                  <td className="px-4 py-3 text-gray-600">{h.l1Rate}</td>
+                  <td className="px-4 py-3 text-gray-600">{h.pack_size}</td>
+                  <td className="px-4 py-3 text-gray-600">{h.l1_rate}</td>
                   <td className="px-4 py-3 text-gray-600">{h.bidder}</td>
                   <td className="px-4 py-3 text-center">
                     <button
@@ -242,10 +228,7 @@ export default function RCHoldersPage() {
 
               {filtered.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={8}
-                    className="text-center px-4 py-6 text-gray-500"
-                  >
+                  <td colSpan={8} className="text-center px-4 py-6 text-gray-500">
                     No RC holders found.
                   </td>
                 </tr>
@@ -256,8 +239,8 @@ export default function RCHoldersPage() {
 
         {/* Footer */}
         <p className="text-sm text-gray-600">
-          Showing {filtered.length > 0 ? 1 : 0} to{" "}
-          {Math.min(entriesPerPage, filtered.length)} of {filtered.length} entries
+          Showing {filtered.length > 0 ? 1 : 0} to {Math.min(entriesPerPage, filtered.length)} of{" "}
+          {filtered.length} entries
         </p>
       </div>
     </section>

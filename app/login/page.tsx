@@ -1,27 +1,46 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { Loader2 } from "lucide-react"; // spinner icon
 
 export default function AdminLogin() {
+  const supabase = createClientComponentClient();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const savedEmail = localStorage.getItem("admin_email") || "admin";
-    const savedPass = localStorage.getItem("admin_password") || "admin123";
+    // get the latest saved admin credentials
+    const { data, error } = await supabase
+      .from("admin_settings")
+      .select("*")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .single();
 
-    if (username === savedEmail && password === savedPass) {
+    setLoading(false);
+
+    if (error || !data) {
+      setError("⚠️ Could not load admin credentials");
+      return;
+    }
+
+    if (username === data.email && password === data.password) {
       localStorage.setItem("admin_auth", "true");
       router.push("/admin/dashboard");
     } else {
-      setError("Invalid credentials");
+      setError("❌ Invalid credentials");
     }
   };
 
@@ -56,6 +75,7 @@ export default function AdminLogin() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="mb-4"
+          disabled={loading}
         />
         <Input
           type="password"
@@ -63,12 +83,22 @@ export default function AdminLogin() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="mb-6"
+          disabled={loading}
         />
+
         <Button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg"
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg flex items-center justify-center gap-2"
         >
-          Login
+          {loading ? (
+            <>
+              <Loader2 className="animate-spin w-5 h-5" />
+              Logging in...
+            </>
+          ) : (
+            "Login"
+          )}
         </Button>
       </form>
     </div>

@@ -3,11 +3,33 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Upload, Trash2, PlusCircle, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+
+// ---------- Types ----------
+type GalleryImage = {
+  id?: number;
+  name: string;
+  url: string;
+};
 
 type GallerySection = {
   id: number;
   title: string;
-  images: { name: string; url: string }[];
+  images: GalleryImage[];
+};
+
+// DB row types (matching your Supabase tables)
+type GalleryImageRow = {
+  id: number;
+  name: string;
+  url: string;
+  section_id: number;
+};
+
+type GallerySectionRow = {
+  id: number;
+  title: string;
+  gallery_images: GalleryImageRow[];
 };
 
 export default function GalleryDashboard() {
@@ -17,102 +39,220 @@ export default function GalleryDashboard() {
   const [updateId, setUpdateId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Load saved gallery
+  // Fetch gallery from DB
   useEffect(() => {
-    const saved = localStorage.getItem("gallery_sections");
-    if (saved) setGallery(JSON.parse(saved));
+    fetchGallery();
   }, []);
 
-  // Save helper
-  const saveToLocal = (data: GallerySection[]) => {
-    localStorage.setItem("gallery_sections", JSON.stringify(data));
-    setGallery(data);
-  };
-
-  // Simulate loading effect
-  const simulateLoading = async (callback: () => void) => {
+  const fetchGallery = async () => {
     setLoading(true);
-    setTimeout(() => {
-      callback();
+    try {
+      const { data: sections, error } = await supabase
+        .from("gallery_sections")
+        .select(`
+          id,
+          title,
+          gallery_images(id, name, url, section_id)
+        `);
+
+      if (error) throw error;
+
+      if (sections) {
+        setGallery(
+          (sections as GallerySectionRow[]).map((s) => ({
+            id: s.id,
+            title: s.title,
+            images: s.gallery_images.map((img) => ({
+              id: img.id,
+              name: img.name,
+              url: img.url,
+            })),
+          }))
+        );
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Fetch gallery error:", err);
+        alert("Failed to fetch gallery: " + err.message);
+      } else {
+        console.error("Unknown error:", err);
+        alert("Failed to fetch gallery: " + JSON.stringify(err));
+      }
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
-  // Convert File → base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
+  // Upload files to Supabase storage
+  const uploadFiles = async (files: FileList, folder: string) => {
+    const uploaded: GalleryImage[] = [];
+
+    for (const file of Array.from(files)) {
+      const filePath = `${folder}/${Date.now()}-${file.name}`;
+      console.log("Uploading file:", file.name, "to path:", filePath);
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("gallery-images")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("gallery-images")
+        .getPublicUrl(filePath);
+
+      if (!urlData?.publicUrl) {
+        throw new Error("Failed to get public URL for " + filePath);
+      }
+
+      uploaded.push({ name: file.name, url: urlData.publicUrl });
+    }
+
+    return uploaded;
   };
 
-  // Upload new section
+  // Add new section
   const handleUpload = async () => {
-    if (!title || !files) return;
+    if (!title || !files) {
+      alert("Please enter a title and select images.");
+      return;
+    }
 
-    simulateLoading(async () => {
-      const newImages = await Promise.all(
-        Array.from(files).map(async (file) => ({
-          name: file.name,
-          url: await fileToBase64(file),
-        }))
-      );
+    setLoading(true);
+    try {
+      const uploadedImages = await uploadFiles(files, title);
 
-      const newSection: GallerySection = {
-        id: Date.now(),
-        title,
-        images: newImages,
-      };
+      const { data: section, error } = await supabase
+        .from("gallery_sections")
+        .insert([{ title }])
+        .select("*")
+        .single<GallerySectionRow>();
 
-      saveToLocal([...gallery, newSection]);
+      if (error) throw error;
+
+      if (section) {
+        const { error: imagesError } = await supabase
+          .from("gallery_images")
+          .insert(
+            uploadedImages.map((img) => ({
+              ...img,
+              section_id: section.id,
+            }))
+          );
+        if (imagesError) throw imagesError;
+      }
+
       setTitle("");
       setFiles(null);
-    });
+      fetchGallery();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Upload section error:", err);
+        alert("Upload failed: " + err.message);
+      } else {
+        console.error("Unknown error:", err);
+        alert("Upload failed: " + JSON.stringify(err));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Update section (add images)
   const handleUpdate = async (id: number) => {
-    if (!files) return;
+    if (!files) {
+      alert("Please select images to add.");
+      return;
+    }
+    setLoading(true);
 
-    simulateLoading(async () => {
-      const newImages = await Promise.all(
-        Array.from(files).map(async (file) => ({
-          name: file.name,
-          url: await fileToBase64(file),
-        }))
-      );
+    try {
+      const uploadedImages = await uploadFiles(files, id.toString());
 
-      const updated = gallery.map((section) =>
-        section.id === id
-          ? { ...section, images: [...section.images, ...newImages] }
-          : section
-      );
+      const { error: imagesError } = await supabase
+        .from("gallery_images")
+        .insert(
+          uploadedImages.map((img) => ({
+            ...img,
+            section_id: id,
+          }))
+        );
+      if (imagesError) throw imagesError;
 
-      saveToLocal(updated);
       setFiles(null);
       setUpdateId(null);
-    });
+      fetchGallery();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Update section error:", err);
+        alert("Update failed: " + err.message);
+      } else {
+        console.error("Unknown error:", err);
+        alert("Update failed: " + JSON.stringify(err));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Delete section
-  const handleDeleteSection = (id: number) => {
-    const updated = gallery.filter((s) => s.id !== id);
-    saveToLocal(updated);
+  const handleDeleteSection = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this section?")) return;
+    setLoading(true);
+
+    try {
+      const section = gallery.find((s) => s.id === id);
+      if (section) {
+        const paths = section.images.map((img) =>
+          img.url.split("/storage/v1/object/public/gallery-images/")[1]
+        );
+        await supabase.storage.from("gallery-images").remove(paths);
+      }
+
+      await supabase.from("gallery_sections").delete().eq("id", id);
+      fetchGallery();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Delete section error:", err);
+        alert("Delete section failed: " + err.message);
+      } else {
+        console.error("Unknown error:", err);
+        alert("Delete section failed: " + JSON.stringify(err));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Delete image
-  const handleDeleteImage = (sectionId: number, imgIndex: number) => {
-    const updated = gallery.map((section) =>
-      section.id === sectionId
-        ? {
-            ...section,
-            images: section.images.filter((_, idx) => idx !== imgIndex),
-          }
-        : section
-    );
-    saveToLocal(updated);
+  // Delete single image
+  const handleDeleteImage = async (
+    sectionId: number,
+    imageId: number,
+    imageUrl: string
+  ) => {
+    if (!confirm("Delete this image?")) return;
+    setLoading(true);
+
+    try {
+      const path = imageUrl.split(
+        "/storage/v1/object/public/gallery-images/"
+      )[1];
+      await supabase.storage.from("gallery-images").remove([path]);
+      await supabase.from("gallery_images").delete().eq("id", imageId);
+      fetchGallery();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Delete image error:", err);
+        alert("Delete image failed: " + err.message);
+      } else {
+        console.error("Unknown error:", err);
+        alert("Delete image failed: " + JSON.stringify(err));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -187,31 +327,22 @@ export default function GalleryDashboard() {
 
               {/* Images */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {section.images.map((img, idx) => (
+                {section.images.map((img) => (
                   <div
-                    key={idx}
+                    key={img.id}
                     className="relative group overflow-hidden rounded-lg shadow-sm"
                   >
-                    {img.url.startsWith("data:") ? (
-                      // Base64 image
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={img.url}
-                        alt={img.name}
-                        className="h-36 w-full object-cover rounded-lg transform group-hover:scale-105 transition duration-300"
-                      />
-                    ) : (
-                      // Normal URL image
-                      <Image
-                        src={img.url}
-                        alt={img.name}
-                        width={300}
-                        height={200}
-                        className="h-36 w-full object-cover rounded-lg transform group-hover:scale-105 transition duration-300"
-                      />
-                    )}
+                    <Image
+                      src={img.url}
+                      alt={img.name}
+                      width={300}
+                      height={200}
+                      className="h-36 w-full object-cover rounded-lg transform group-hover:scale-105 transition duration-300"
+                    />
                     <button
-                      onClick={() => handleDeleteImage(section.id, idx)}
+                      onClick={() =>
+                        handleDeleteImage(section.id, img.id!, img.url)
+                      }
                       className="absolute top-2 right-2 bg-red-600 p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
                     >
                       <Trash2 className="w-4 h-4 text-white" />

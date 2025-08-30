@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 type RCHolder = {
-  id: number;
-  indentNo: string;
+  id: string;
+  indent_no: string;
   item: string;
   dosage: string;
-  packSize: string;
-  l1Rate: string;
+  pack_size: string;
+  l1_rate: string;
   bidder: string;
 };
 
@@ -17,12 +18,22 @@ export default function PublicRCHolders() {
   const [search, setSearch] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(10);
 
-  // Load data from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("rc_holders");
-    if (saved) {
-      setHolders(JSON.parse(saved));
+  // Fetch from Supabase
+  const fetchHolders = async () => {
+    const { data, error } = await supabase
+      .from("rc_holders")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching holders:", error.message);
+    } else {
+      setHolders(data || []);
     }
+  };
+
+  useEffect(() => {
+    fetchHolders();
   }, []);
 
   // Search filter
@@ -85,11 +96,11 @@ export default function PublicRCHolders() {
             {filtered.slice(0, entriesPerPage).map((h, idx) => (
               <tr key={h.id} className="hover:bg-blue-50 transition-colors">
                 <td className="px-4 py-3">{idx + 1}</td>
-                <td className="px-4 py-3">{h.indentNo}</td>
+                <td className="px-4 py-3">{h.indent_no}</td>
                 <td className="px-4 py-3 font-medium">{h.item}</td>
                 <td className="px-4 py-3">{h.dosage}</td>
-                <td className="px-4 py-3">{h.packSize}</td>
-                <td className="px-4 py-3">{h.l1Rate}</td>
+                <td className="px-4 py-3">{h.pack_size}</td>
+                <td className="px-4 py-3">{h.l1_rate}</td>
                 <td className="px-4 py-3">{h.bidder}</td>
               </tr>
             ))}

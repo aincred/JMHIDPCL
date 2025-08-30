@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 type ItemwiseRC = {
-  id: number;
-  indentNo: string;
+  id: string;
+  indent_no: string;
   item: string;
   dosage: string;
-  packSize: string;
-  l1Rate: string;
+  pack_size: string;
+  l1_rate: string;
   bidder: string;
 };
 
@@ -25,60 +26,64 @@ export default function ItemwiseRCPage() {
   const [l1Rate, setL1Rate] = useState("");
   const [bidder, setBidder] = useState("");
 
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("itemwise_rc");
-    if (saved) {
-      setContracts(JSON.parse(saved));
+  // Fetch from Supabase
+  const fetchContracts = async () => {
+    const { data, error } = await supabase
+      .from("itemwise_rc")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching contracts:", error.message);
     } else {
-      const defaultContract: ItemwiseRC = {
-        id: 1,
-        indentNo: "IND-2023-100",
-        item: "Amoxicillin",
-        dosage: "Capsule 250 mg",
-        packSize: "10x10",
-        l1Rate: "₹120.00",
-        bidder: "XYZ Pharma Ltd.",
-      };
-      setContracts([defaultContract]);
-      localStorage.setItem("itemwise_rc", JSON.stringify([defaultContract]));
+      setContracts(data || []);
     }
+  };
+
+  useEffect(() => {
+    fetchContracts();
   }, []);
 
-  // Save to localStorage
-  useEffect(() => {
-    if (contracts.length > 0) {
-      localStorage.setItem("itemwise_rc", JSON.stringify(contracts));
-    }
-  }, [contracts]);
-
   // Add Contract
-  const handleAddContract = (e: React.FormEvent) => {
+  const handleAddContract = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!indentNo || !item || !dosage || !packSize || !l1Rate || !bidder) return;
 
-    const newContract: ItemwiseRC = {
-      id: Date.now(),
-      indentNo,
-      item,
-      dosage,
-      packSize,
-      l1Rate,
-      bidder,
-    };
+    const { data, error } = await supabase
+      .from("itemwise_rc")
+      .insert([
+        {
+          indent_no: indentNo,
+          item,
+          dosage,
+          pack_size: packSize,
+          l1_rate: l1Rate,
+          bidder,
+        },
+      ])
+      .select();
 
-    setContracts([newContract, ...contracts]);
-    setIndentNo("");
-    setItem("");
-    setDosage("");
-    setPackSize("");
-    setL1Rate("");
-    setBidder("");
+    if (error) {
+      console.error("Error inserting contract:", error.message);
+    } else if (data) {
+      setContracts([data[0], ...contracts]); // update state
+      setIndentNo("");
+      setItem("");
+      setDosage("");
+      setPackSize("");
+      setL1Rate("");
+      setBidder("");
+    }
   };
 
-  // Delete
-  const handleDelete = (id: number) => {
-    setContracts(contracts.filter((c) => c.id !== id));
+  // Delete Contract
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("itemwise_rc").delete().eq("id", id);
+    if (error) {
+      console.error("Error deleting contract:", error.message);
+    } else {
+      setContracts(contracts.filter((c) => c.id !== id));
+    }
   };
 
   // Search
@@ -105,7 +110,6 @@ export default function ItemwiseRCPage() {
             </label>
             <input
               type="text"
-              placeholder="Indent No."
               value={indentNo}
               onChange={(e) => setIndentNo(e.target.value)}
               className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
@@ -115,7 +119,6 @@ export default function ItemwiseRCPage() {
             <label className="text-sm font-medium text-gray-700">Item</label>
             <input
               type="text"
-              placeholder="Item name"
               value={item}
               onChange={(e) => setItem(e.target.value)}
               className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
@@ -127,7 +130,6 @@ export default function ItemwiseRCPage() {
             </label>
             <input
               type="text"
-              placeholder="Dosage"
               value={dosage}
               onChange={(e) => setDosage(e.target.value)}
               className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
@@ -137,7 +139,6 @@ export default function ItemwiseRCPage() {
             <label className="text-sm font-medium text-gray-700">Pack Size</label>
             <input
               type="text"
-              placeholder="Pack Size"
               value={packSize}
               onChange={(e) => setPackSize(e.target.value)}
               className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
@@ -147,7 +148,6 @@ export default function ItemwiseRCPage() {
             <label className="text-sm font-medium text-gray-700">L-1 Rate (₹)</label>
             <input
               type="text"
-              placeholder="Rate"
               value={l1Rate}
               onChange={(e) => setL1Rate(e.target.value)}
               className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
@@ -159,7 +159,6 @@ export default function ItemwiseRCPage() {
             </label>
             <input
               type="text"
-              placeholder="Bidder name"
               value={bidder}
               onChange={(e) => setBidder(e.target.value)}
               className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
@@ -224,11 +223,11 @@ export default function ItemwiseRCPage() {
                   className="hover:bg-blue-50 transition-colors duration-200"
                 >
                   <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 text-gray-700">{c.indentNo}</td>
+                  <td className="px-4 py-3 text-gray-700">{c.indent_no}</td>
                   <td className="px-4 py-3 font-medium text-gray-800">{c.item}</td>
                   <td className="px-4 py-3 text-gray-600">{c.dosage}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.packSize}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.l1Rate}</td>
+                  <td className="px-4 py-3 text-gray-600">{c.pack_size}</td>
+                  <td className="px-4 py-3 text-gray-600">{c.l1_rate}</td>
                   <td className="px-4 py-3 text-gray-600">{c.bidder}</td>
                   <td className="px-4 py-3 text-center">
                     <button
