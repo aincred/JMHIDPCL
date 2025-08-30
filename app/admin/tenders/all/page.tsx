@@ -1,3 +1,4 @@
+// app\admin\tenders\all
 "use client";
 
 import { useEffect, useState } from "react";
