@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, Eye } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient"; // Make sure this exists
 
 // ---------- Types ----------
 type Tender = {
@@ -28,6 +28,7 @@ type GallerySection = {
   images: GalleryImage[];
 };
 
+// Supabase row type
 type GallerySectionRow = {
   id: number;
   title: string;
@@ -39,34 +40,41 @@ export default function DashboardPage() {
   const [query, setQuery] = useState("");
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [gallery, setGallery] = useState<GallerySection[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Load tenders from localStorage
+    const all: Tender[] = [];
+    const loadTenders = (key: string, type: string) => {
+      const data = localStorage.getItem(key);
+      if (data) {
+        all.push(
+          ...JSON.parse(data).map((t: Omit<Tender, "type">) => ({
+            ...t,
+            type,
+          }))
+        );
+      }
+    };
+    loadTenders("drug_tenders", "Drug");
+    loadTenders("equipment_tenders", "Equipment");
+    loadTenders("consumable_tenders", "Consumable");
+    loadTenders("covid_tenders", "Covid-19");
+    setTenders(all);
+
+    // Fetch gallery sections from Supabase
+    const fetchGallery = async () => {
       setLoading(true);
       try {
-        // Fetch tenders from all tables
-        const fetchTable = async (table: string, type: string) => {
-          const { data, error } = await supabase.from(table).select("*");
-          if (error) throw error;
-          return data?.map((t) => ({ ...t, type })) || [];
-        };
-
-        const allTenders = [
-          ...(await fetchTable("drug_tenders", "Drug")),
-          ...(await fetchTable("equipment_tenders", "Equipment")),
-          ...(await fetchTable("consumable_tenders", "Consumable")),
-          ...(await fetchTable("covid_tenders", "Covid-19")),
-        ];
-
-        setTenders(allTenders);
-
-        // Fetch gallery
-        const { data: sections, error: galleryError } = await supabase
+        const { data: sections, error } = await supabase
           .from("gallery_sections")
-          .select(`id, title, gallery_images(id, name, url)`);
+          .select(`
+            id,
+            title,
+            gallery_images(id, name, url)
+          `);
 
-        if (galleryError) throw galleryError;
+        if (error) throw error;
 
         if (sections) {
           setGallery(
@@ -78,24 +86,18 @@ export default function DashboardPage() {
           );
         }
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error("Failed to fetch gallery:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchGallery();
   }, []);
 
   const handleSearch = () => {
     alert(`Searching for: ${query}`);
   };
-
-  const filteredTenders = tenders.filter(
-    (t) =>
-      t.title.toLowerCase().includes(query.toLowerCase()) ||
-      t.type.toLowerCase().includes(query.toLowerCase())
-  );
 
   return (
     <div className="p-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
@@ -146,32 +148,25 @@ export default function DashboardPage() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={7} className="text-center p-4 text-gray-500">
-                  Loading tenders...
+            {tenders.slice(0, 5).map((t, idx) => (
+              <tr key={t.id} className="text-sm hover:bg-gray-50 transition-colors">
+                <td className="p-3 border-b">{idx + 1}</td>
+                <td className="p-3 border-b">{t.title}</td>
+                <td className="p-3 border-b">{t.type}</td>
+                <td className="p-3 border-b">{t.published}</td>
+                <td className="p-3 border-b">{t.start}</td>
+                <td className="p-3 border-b">{t.end}</td>
+                <td className="p-3 border-b">
+                  <Link
+                    href={`/admin/tenders/${t.type.toLowerCase()}/view/${t.id}`}
+                    className="inline-flex items-center text-blue-600 hover:underline"
+                  >
+                    <Eye size={16} className="mr-1" /> View
+                  </Link>
                 </td>
               </tr>
-            ) : filteredTenders.length > 0 ? (
-              filteredTenders.slice(0, 5).map((t, idx) => (
-                <tr key={t.id} className="text-sm hover:bg-gray-50 transition-colors">
-                  <td className="p-3 border-b">{idx + 1}</td>
-                  <td className="p-3 border-b">{t.title}</td>
-                  <td className="p-3 border-b">{t.type}</td>
-                  <td className="p-3 border-b">{t.published}</td>
-                  <td className="p-3 border-b">{t.start}</td>
-                  <td className="p-3 border-b">{t.end}</td>
-                  <td className="p-3 border-b">
-                    <Link
-                      href={`/admin/tenders/${t.type.toLowerCase()}/view/${t.id}`}
-                      className="inline-flex items-center text-blue-600 hover:underline"
-                    >
-                      <Eye size={16} className="mr-1" /> View
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            ) : (
+            ))}
+            {tenders.length === 0 && (
               <tr>
                 <td colSpan={7} className="text-center p-4 text-gray-500">
                   No tenders found
