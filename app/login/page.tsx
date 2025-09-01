@@ -82,9 +82,16 @@ export default function AdminLogin() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mb-6"
+          className="mb-2"
           disabled={loading}
         />
+
+        {/* Example credentials box */}
+        <div className="text-xs text-gray-500 bg-gray-50 border border-gray-200 p-2 rounded-md mb-6">
+          <p className="font-semibold text-gray-600">Demo Credentials:</p>
+          <p>Email: <span className="font-mono">admin@example.com</span></p>
+          <p>Password: <span className="font-mono">admin@123</span></p>
+        </div>
 
         <Button
           type="submit"
