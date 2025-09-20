@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -57,7 +57,7 @@ export default function AdminLogin() {
             width={80}
             height={80}
             className="rounded-full shadow-md"
-          />
+          />p
           <h1 className="text-2xl font-bold mt-3 text-gray-800">Admin Login</h1>
           <p className="text-gray-500 text-sm mt-1">
             Sign in to manage your dashboard
